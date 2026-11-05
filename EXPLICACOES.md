@@ -121,6 +121,68 @@ Testei os dois arquivos no DB Fiddle, com MySQL 8. No caminho, encontrei três e
 - A tabela criada como `Users` e consultada como `users`. O DB Fiddle roda em Linux, onde o MySQL diferencia maiúsculas de minúsculas nos nomes de tabela, então ele dizia que `users` não existia. Foi isso que me levou a padronizar o nome em minúsculas.
 
 ## 5. Backend (NestJS)
+
+A API está em `backend/`. Criei o projeto com o Nest CLI e gerei o módulo de usuários com `nest g module users`, `nest g controller users` e `nest g service users`, que já criam os arquivos no padrão do framework e registram o `UsersModule` no `AppModule`. Os dados ficam em memória, como o enunciado permite.
+
+### Estrutura
+
+backend/src/
+├── main.ts                       # ponto de entrada: cria a aplicação e sobe o servidor
+├── app.module.ts                 # módulo raiz, importa o UsersModule
+└── users/
+├── users.module.ts           # agrupa o controller e o service de usuários
+├── users.controller.ts       # rotas HTTP (GET e POST /users)
+├── users.service.ts          # regra de negócio e armazenamento em memória
+├── dto/
+│   └── create-user.dto.ts    # formato do corpo do POST
+└── interfaces/
+└── user.interface.ts     # formato de um usuário
+
+
+Organizei por funcionalidade: tudo que é de usuários fica dentro de `users/`. Os arquivos principais do módulo ficam na raiz da pasta, e os de apoio (DTO e interface) ficam em subpastas por tipo. Se a API ganhar outro recurso, como produtos, ele vira uma pasta `products/` com a mesma estrutura, sem misturar com a de usuários.
+
+### Responsabilidade de cada parte
+
+- **Module:** o `UsersModule` declara quais controllers e providers pertencem a ele. O `AppModule` só importa o `UsersModule`, sem precisar conhecer o que tem dentro.
+- **Controller:** cuida apenas da camada HTTP. O `@Controller('users')` define o prefixo da rota, o `@Get()` e o `@Post()` mapeiam os métodos, e o `@Body()` lê o corpo da requisição. Ele não tem lógica própria, só repassa a chamada para o service e devolve o resultado. O Nest converte o retorno para JSON e responde com status 200 no GET e 201 no POST.
+- **Service:** concentra a regra de negócio. Guarda a lista de usuários num array privado, já iniciado com a Ana e o Pedro do enunciado, e controla o próximo `id` com um contador que começa em 3. O `findAll()` retorna a lista, e o `create()` monta o novo usuário, adiciona na lista e o retorna. O service não sabe nada de HTTP.
+- **Interface `User`:** descreve o formato de um usuário (`id`, `name`, `email`) e tipa os retornos do service e do controller.
+- **DTO `CreateUserDto`:** descreve o que o cliente envia no POST, só `name` e `email`. Ele não tem `id` porque quem gera o `id` é o servidor. Usei classe, e não interface, porque classes continuam existindo depois da compilação para JavaScript, e o Nest usa essa informação em tempo de execução. Isso também permite adicionar validação com `class-validator` no futuro.
+
+Separar controller e service faz com que trocar o array por um banco de dados real exija mudança apenas no service. O controller continua igual, porque só chama `findAll()` e `create()` sem saber onde os dados ficam.
+
+### Injeção de dependência
+
+O controller recebe o service pelo construtor (`constructor(private readonly usersService: UsersService)`), sem nenhum `new UsersService()` no código. O Nest lê o tipo do parâmetro e entrega a instância pronta. Por padrão, ele cria uma única instância do service e a compartilha. É por isso que a lista em memória se mantém entre uma requisição e outra: todas usam o mesmo objeto.
+
+Isso também facilita os testes, porque num teste é possível fornecer um service falso para o controller sem alterar o código dele.
+
+### Decisões no `create()`
+
+Inicialmente usei o spread (`{ id: this.nextId++, ...createUserDto }`) para montar o novo usuário. Depois percebi um problema: o DTO só existe para o TypeScript, e em tempo de execução o Nest não remove os campos extras do corpo da requisição. Se o cliente enviasse `"id": 1`, esse valor sobrescreveria o `id` gerado, porque o spread vem depois, e haveria dois usuários com o mesmo `id`. Campos que nem existem no modelo, como `"admin": true`, também seriam salvos.
+
+Troquei por uma atribuição explícita de `name` e `email`, então qualquer outro campo é ignorado. Num projeto real, eu usaria o `ValidationPipe` com `whitelist: true`, que remove automaticamente os campos que não estão no DTO.
+
+### `import type` no controller
+
+No controller, a interface `User` é importada com `import type`. O projeto usa `isolatedModules` e `emitDecoratorMetadata`, e com essa combinação o TypeScript exige que um tipo usado na assinatura de um método decorado seja importado como tipo (erro TS1272). Isso acontece porque o Nest lê os tipos desses métodos em tempo de execução, e interfaces não existem depois da compilação. O `CreateUserDto` e o `UsersService` são classes, então o import normal funciona para eles.
+
+Também precisei adicionar `"rootDir": "./"` ao `tsconfig.json`, porque o TypeScript 6 passou a exigir essa opção explicitamente.
+
+### Limitação do armazenamento em memória
+
+Como os dados ficam num array na memória do processo, os usuários criados pelo POST somem quando o servidor reinicia. A Ana e o Pedro voltam porque estão no código como valor inicial do array, e o contador de `id` volta para 3. Com o `npm run start:dev`, que reinicia o servidor a cada arquivo salvo, isso também acontece durante o desenvolvimento. Para persistir os dados, bastaria substituir o array por um banco dentro do `UsersService`.
+
+### Como testei
+
+Subi o servidor com `npm run start:dev` e testei as rotas com o Bruno. A collection está em `backend/users-api/`, com três requisições:
+
+- **List users:** GET que retorna a Ana e o Pedro, no formato do enunciado.
+- **Create user:** POST com a Maria, que retorna o usuário criado com `id` 3. Rodando o GET em seguida, ela aparece na lista.
+- **Create user - ignore extra fields:** POST com `id` e `admin` no corpo, que retorna o usuário com o próximo `id` gerado pelo servidor e sem o campo `admin`.
+
+Para rodar: `npm install` e `npm run start:dev` dentro de `backend/`, e a API fica disponível em `http://localhost:3000/users`.
+
 ## 6. Git (estratégia de commits)
 ## 7. Organização de Projeto
 ## 8. Cenário de Problema
