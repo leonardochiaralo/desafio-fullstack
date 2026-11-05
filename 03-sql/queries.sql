@@ -2,9 +2,9 @@
 SELECT * FROM users ORDER BY created_at DESC;
 
 -- Contar quantos usuários foram criados por mês
-select 
+SELECT 
     DATE_FORMAT(created_at, '%Y-%m') AS month,
     COUNT(*) AS user_count
-from users
-group by month
-order by month desc;
+FROM users
+GROUP BY month
+ORDER BY month DESC;
