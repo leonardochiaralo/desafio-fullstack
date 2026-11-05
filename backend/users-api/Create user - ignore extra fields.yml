@@ -1,0 +1,17 @@
+info:
+  name: Create user - ignore extra fields
+  type: http
+
+http:
+  method: POST
+  url: http://localhost:3000/users
+  body:
+    type: json
+    data: '{ "name": "Hacker", "email": "h@x.com", "id": 1, "admin": true }'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
