@@ -1,0 +1,35 @@
+:root {
+  --primary-color: #2563eb;
+  --error-color: #b42318;
+  --text-color: #1f2328;
+  --border-color: #c9cfd6;
+  --card-background-color: #ffffff;
+  --card-border-color: #e4e7eb;
+  --primary-color-hover: #1d4ed8;
+  --error-background-color: #fef3f2;
+  --text-secondary-color: #57606a;
+  --background-color: #f4f5f7;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  padding: 16px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#app {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
