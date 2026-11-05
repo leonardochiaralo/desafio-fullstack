@@ -1,7 +1,41 @@
 # Explicações
 
 ## 1. HTML + CSS
+
+O formulário está em `01-html-css/`, separado em dois arquivos: `index.html` com a estrutura e `style.css` com todo o estilo. Não usei estilo inline, para manter cada arquivo com uma responsabilidade só. O visual partiu de uma referência de design que gerei com o Claude (detalhes na seção de Uso de IA), e a implementação do HTML e do CSS foi feita por mim.
+
+### HTML
+
+- O `body` representa a página inteira, e o `<main>` é o cartão do formulário. Como a página tem só esse conteúdo, usei o próprio `<main>` como cartão. Num site maior, com menu e rodapé, o `<main>` seria uma área mais ampla e o cartão seria um elemento dentro dele.
+- Dentro do `<main>` ficam um cabeçalho (`.form-header`, com o título e o subtítulo) e o `<form>`.
+- Cada campo fica em um `.form-group`, com o `<label>` e o `<input>` juntos. Isso deixa o HTML mais organizado e facilita o CSS, porque consigo controlar separadamente o espaço entre label e campo e o espaço entre um campo e outro.
+- Todo `<label>` está ligado ao seu `<input>` pelo `for`/`id`. Isso melhora a acessibilidade (o leitor de tela anuncia o nome do campo) e a usabilidade (clicar no texto do label coloca o foco no campo).
+- O `lang="pt-BR"` e a meta `viewport` garantem o idioma correto e o funcionamento no celular.
+
+### Validação
+
+A validação usa só recursos nativos do HTML, sem JavaScript:
+
+- `required` nos três campos, para que nenhum fique vazio.
+- `type="email"`, que faz o navegador conferir o formato do e-mail.
+- `minlength="8"` na senha, com um texto de dica abaixo do campo informando a regra.
+
+Com isso, o navegador bloqueia o envio e mostra a mensagem dele quando algo está errado. Como não há backend nesse exercício, o `action` está vazio e a página só recarrega quando o formulário é válido.
+
+### CSS
+
+- **Variáveis no `:root`:** todas as cores ficam em variáveis nomeadas pela função (`--primary-color`, `--error-color`, `--text-secondary-color`), e não pelo tom. Se a cor de destaque mudar, altero em um lugar só.
+- **Reset:** apliquei `box-sizing: border-box` em todos os elementos com o seletor `*`, para que o `padding` não some à largura. Sem isso, o cartão com `width: 100%` e `padding: 32px` passava da largura da tela no celular. Também zerei `margin` e `padding` padrão do navegador.
+- **Layout:** o `body` usa flexbox com `min-height: 100vh` para centralizar o cartão na tela. Usei `min-height` em vez de `height` para que, em telas baixas, a página cresça em vez de cortar o conteúdo. O cartão tem `width: 100%` com `max-width: 400px`, então ocupa 400px no computador e se ajusta no celular. Os campos ficam empilhados com flexbox e `gap`.
+- **Estados:** o botão tem `:hover` e `:focus-visible`, e os campos têm um anel de foco com `box-shadow`. O foco visível é importante para quem navega pelo teclado.
+- **Estado de erro:** os campos inválidos ficam com borda vermelha e fundo rosado. Primeiro usei `:invalid`, mas como os campos `required` vazios já são inválidos ao carregar, a página abria com tudo vermelho. Troquei por `:user-invalid`, que só aplica o estilo depois que a pessoa interage com o campo.
+- **CSS aninhado:** usei o aninhamento nativo do CSS (regras dentro de `.form` e `&:hover`, por exemplo), sem precisar de Sass. Ele é suportado pelos navegadores atuais e deixa claro o que pertence a cada bloco.
+- **Fonte:** a Inter é carregada pelo Google Fonts, com `preconnect` antes do CSS para adiantar a conexão. Também coloquei `font-family: inherit` nos inputs e no botão, porque por padrão eles não herdam a fonte da página.
+
+Testei no navegador o envio vazio, um e-mail inválido (`ana@`), uma senha curta, a navegação pelo teclado e a visualização em tela de celular pelas ferramentas de desenvolvedor.
+
 ## 2. Vue 3 (Composition API)
+
 ## 3. TypeScript
 
 Criei uma interface `User` para definir o formato de um usuário e tipei `users` como `User[]`, para que o TypeScript aponte erro caso seja adicionado um usuário fora do padrão. Usei `interface` porque ela descreve bem o formato de um objeto e pode ser estendida depois, se o modelo crescer.
