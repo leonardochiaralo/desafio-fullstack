@@ -10,10 +10,18 @@ const users: User[] = [
     { id: 3, name: 'Maria', age: 22 },
 ];
 
-const getNamesOfUsersOver23 = (usersList: User[]): string[] => {
-    const usersOver23 = usersList.filter(user => user.age > 23);
-    return usersOver23.map(user => user.name);
+type NumericKeys<T> = {
+    [K in keyof T]: T[K] extends number ? K : never;
+}[keyof T];
+
+const filterByNumericFieldOver = <T extends { name: string }, K extends NumericKeys<T>>(
+    items: T[],
+    field: K,
+    min: number,
+): string[] => {
+    const filteredUsers = items.filter(item => (item[field] as number) > min);
+    return filteredUsers.map(user => user.name);
 };
 
-
-console.log(getNamesOfUsersOver23(users));
+console.log(filterByNumericFieldOver(users, 'age', 23));
+console.log(filterByNumericFieldOver(users, 'id', 1));
