@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { Task } from './types/task'
+import TodoItem from './components/TodoItem.vue'
 
 const tasks = ref<Task[]>([
   { id: '1', title: 'Tarefa 1', done: false },
@@ -12,9 +13,7 @@ const tasks = ref<Task[]>([
   <main>
     <h1>Minhas Tarefas</h1>
     <ul>
-      <li v-for="task in tasks" :key="task.id">
-        {{ task.title }}
-      </li>
+      <TodoItem v-for="task in tasks" :key="task.id" :task="task" />
     </ul>
   </main>
 </template>
@@ -31,5 +30,9 @@ main {
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  ul {
+    list-style: none;
+  }
 }
 </style>
