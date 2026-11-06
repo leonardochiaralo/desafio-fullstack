@@ -162,6 +162,7 @@ A API está em `backend/`. Criei o projeto com o Nest CLI e gerei o módulo de u
 
 ### Estrutura
 
+```
 backend/src/
 ├── main.ts                       # ponto de entrada: cria a aplicação e sobe o servidor
 ├── app.module.ts                 # módulo raiz, importa o UsersModule
@@ -173,7 +174,7 @@ backend/src/
 │   └── create-user.dto.ts    # formato do corpo do POST
 └── interfaces/
 └── user.interface.ts     # formato de um usuário
-
+```
 
 Organizei por funcionalidade: tudo que é de usuários fica dentro de `users/`. Os arquivos principais do módulo ficam na raiz da pasta, e os de apoio (DTO e interface) ficam em subpastas por tipo. Se a API ganhar outro recurso, como produtos, ele vira uma pasta `products/` com a mesma estrutura, sem misturar com a de usuários.
 
@@ -242,6 +243,7 @@ Neste desafio usei versões simplificadas das estruturas abaixo, porque os exerc
 
 ### Frontend (Vue 3)
 
+```
 src/
 ├── assets/ # CSS global, fontes e imagens
 ├── components/ # componentes reutilizáveis
@@ -255,7 +257,7 @@ src/
 ├── utils/ # funções puras (formatar data, validar e-mail)
 ├── App.vue
 └── main.ts
-
+```
 
 A ideia é separar por responsabilidade. Os componentes cuidam da interface, os `services` concentram as chamadas HTTP (se a URL da API mudar, altero em um lugar só), e os `composables` guardam a lógica que mais de um componente usa. Separo `views` de `components` para distinguir o que é uma página inteira do que é uma peça reutilizável. Além disso, teria `.env` para a URL da API, ESLint e Prettier desde o começo, e uma pasta de testes.
 
@@ -263,6 +265,7 @@ Se o projeto crescesse muito, eu migraria para uma organização por funcionalid
 
 ### Backend (NestJS)
 
+```
 src/
 ├── main.ts
 ├── app.module.ts
@@ -278,7 +281,7 @@ src/
 ├── config/ # leitura das variáveis de ambiente
 └── database/ # conexão e migrations
 test/ # testes e2e
-
+```
 
 O NestJS já incentiva a organização por módulos, e eu sigo isso: um módulo por domínio (`users`, `auth`), cada um com seu controller, service, DTOs e entidades. O controller só recebe a requisição e devolve a resposta, o service tem a regra de negócio, e os DTOs definem o formato dos dados que entram. Assim, cada domínio fica isolado e fácil de encontrar. O que é usado por vários módulos (como um guard de autenticação ou um filtro de erros) vai para `common`, e as configurações ficam em variáveis de ambiente, fora do código.
 
@@ -303,7 +306,7 @@ Além disso, independente da causa, mostraria um estado de carregamento no botã
 ### Ferramentas que usei
 
 - **Claude Code:** no bônus do TypeScript, gerou a tipagem genérica (`NumericKeys<T>`) que permite filtrar por qualquer campo numérico. Depois estudei como ela funciona, e a explicação está no item 3.
-- **Claude (chat):** usei como um mentor durante o desafio inteiro. Ele me guiou passo a passo, explicando o que fazer e por quê, e revisou o meu código a cada etapa apontando erros, mas o código foi escrito por mim. Também usei para gerar as referências de design do formulário e da to-do list, para tirar dúvidas de configuração (como as opções do instalador do Vue) e para revisar e redigir as explicações deste arquivo a partir do que eu fiz e entendi.
+- **Claude (chat):** usei como um mentor durante o desafio inteiro. Ele me guiou durante o desenvolvimento, principalmente nos momentos em que travei, explicando o que fazer e por quê, e revisou o meu código a cada etapa apontando erros, mas o código foi escrito por mim. Também usei para gerar as referências de design do formulário e da to-do list, para tirar dúvidas de configuração (como as opções do instalador do Vue) e para revisar e redigir as explicações deste arquivo a partir do que eu fiz e entendi.
 
 ### Um exemplo concreto
 
