@@ -4,13 +4,23 @@ import type { Task } from '../types/task'
 defineProps<{
   task: Task
 }>()
+
+const emit = defineEmits<{
+  toggle: [id: string]
+  remove: [id: string]
+}>()
 </script>
 
 <template>
   <li :class="{ done: task.done }">
-    <input type="checkbox" :checked="task.done" :id="`task-${task.id}`" />
+    <input
+      type="checkbox"
+      :checked="task.done"
+      :id="`task-${task.id}`"
+      @change="emit('toggle', task.id)"
+    />
     <label :for="`task-${task.id}`">{{ task.title }}</label>
-    <button type="button" aria-label="Remover tarefa">×</button>
+    <button type="button" aria-label="Remover tarefa" @click="emit('remove', task.id)">×</button>
   </li>
 </template>
 
