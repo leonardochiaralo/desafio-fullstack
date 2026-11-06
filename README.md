@@ -6,6 +6,7 @@ As explicações de cada item, as respostas de arquitetura e o uso de ferramenta
 
 ## Estrutura
 
+```
 ├── 01-html-css/ # formulário de cadastro com validação (item 1)
 ├── 02-typescript/ # função de filtro tipada e genérica (item 3)
 ├── 03-sql/ # schema e queries em MySQL (item 4)
@@ -13,6 +14,7 @@ As explicações de cada item, as respostas de arquitetura e o uso de ferramenta
 ├── frontend/ # to-do list em Vue 3 (item 2)
 ├── EXPLICACOES.md
 └── README.md
+```
 
 ## Pré-requisitos
 
