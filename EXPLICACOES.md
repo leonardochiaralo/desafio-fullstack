@@ -220,6 +220,67 @@ Subi o servidor com `npm run start:dev` e testei as rotas com o Bruno. A collect
 Para rodar: `npm install` e `npm run start:dev` dentro de `backend/`, e a API fica disponível em `http://localhost:3000/users`.
 
 ## 6. Git (estratégia de commits)
+
 ## 7. Organização de Projeto
+
+Neste desafio usei versões simplificadas das estruturas abaixo, porque os exercícios eram pequenos. Num projeto fullstack real, começando do zero, eu organizaria assim.
+
+### Frontend (Vue 3)
+
+src/
+├── assets/ # CSS global, fontes e imagens
+├── components/ # componentes reutilizáveis
+│ └── ui/ # componentes base (botão, input, modal)
+├── views/ # uma página por rota (LoginView, DashboardView)
+├── router/ # definição das rotas (Vue Router)
+├── stores/ # estado global (Pinia), como o usuário logado
+├── composables/ # lógica reutilizável com a Composition API (useAuth, useFetch)
+├── services/ # chamadas à API, separadas dos componentes
+├── types/ # interfaces e tipos compartilhados
+├── utils/ # funções puras (formatar data, validar e-mail)
+├── App.vue
+└── main.ts
+
+
+A ideia é separar por responsabilidade. Os componentes cuidam da interface, os `services` concentram as chamadas HTTP (se a URL da API mudar, altero em um lugar só), e os `composables` guardam a lógica que mais de um componente usa. Separo `views` de `components` para distinguir o que é uma página inteira do que é uma peça reutilizável. Além disso, teria `.env` para a URL da API, ESLint e Prettier desde o começo, e uma pasta de testes.
+
+Se o projeto crescesse muito, eu migraria para uma organização por funcionalidade (`features/auth/`, `features/tasks/`, cada uma com seus componentes, store e services), para não ter pastas gigantes misturando assuntos diferentes.
+
+### Backend (NestJS)
+
+src/
+├── main.ts
+├── app.module.ts
+├── modules/
+│ ├── users/
+│ │ ├── dto/ # create-user.dto.ts, update-user.dto.ts
+│ │ ├── entities/ # user.entity.ts
+│ │ ├── users.controller.ts
+│ │ ├── users.service.ts
+│ │ └── users.module.ts
+│ └── auth/
+├── common/ # guards, pipes, filters, interceptors e decorators compartilhados
+├── config/ # leitura das variáveis de ambiente
+└── database/ # conexão e migrations
+test/ # testes e2e
+
+
+O NestJS já incentiva a organização por módulos, e eu sigo isso: um módulo por domínio (`users`, `auth`), cada um com seu controller, service, DTOs e entidades. O controller só recebe a requisição e devolve a resposta, o service tem a regra de negócio, e os DTOs definem o formato dos dados que entram. Assim, cada domínio fica isolado e fácil de encontrar. O que é usado por vários módulos (como um guard de autenticação ou um filtro de erros) vai para `common`, e as configurações ficam em variáveis de ambiente, fora do código.
+
 ## 8. Cenário de Problema
+
+### Primeiras verificações
+
+1. **Reproduzir e medir.** Antes de mudar qualquer coisa, abriria a aba Network das ferramentas de desenvolvedor para ver o que demora: se é o carregamento da página (arquivos JavaScript e CSS grandes, imagens, fontes) ou uma requisição para a API. A cascata de requisições mostra também se há chamadas em sequência que poderiam ser feitas em paralelo. O Lighthouse ajuda a ter uma visão geral.
+2. **Separar frontend de backend.** Se a lentidão estiver na resposta da API, olharia o tempo do endpoint nos logs do backend e chamaria ele direto (com curl ou Postman) para isolar o problema da interface.
+3. **No backend,** verificaria a consulta ao banco (se a busca do usuário por e-mail tem índice, usando `EXPLAIN`), chamadas a serviços externos e o custo do hash de senha, que se estiver configurado alto demais deixa o login lento.
+4. **O contexto:** se acontece em todo ambiente ou só em produção, para todos os usuários ou só alguns, e se começou depois de algum deploy.
+
+### Duas possíveis soluções
+
+1. **Carregar só o necessário na tela de login.** Usar lazy loading nas rotas, para que a tela de login baixe só o código dela e não o da aplicação inteira, além de comprimir imagens e carregar apenas os pesos de fonte usados. Arquivos estáticos podem ir para cache ou CDN.
+2. **Otimizar o backend do login.** Criar um índice na coluna de e-mail da tabela de usuários, para a busca não percorrer a tabela inteira, e revisar o que a rota faz: se ela carrega dados que não são necessários no login, ou chama serviços que poderiam ser feitos depois.
+
+Além disso, independente da causa, mostraria um estado de carregamento no botão de entrar, para a pessoa saber que algo está acontecendo enquanto espera.
+
 ## Uso de Ferramentas de IA
