@@ -219,7 +219,22 @@ Subi o servidor com `npm run start:dev` e testei as rotas com o Bruno. A collect
 
 Para rodar: `npm install` e `npm run start:dev` dentro de `backend/`, e a API fica disponível em `http://localhost:3000/users`.
 
-## 6. Git (estratégia de commits)
+## 6. Git
+
+### Estratégia de commits
+
+Fiz um commit para cada entrega com sentido próprio, em vez de um commit grande no final, para que o histórico mostre a evolução do trabalho e cada mudança possa ser entendida (ou desfeita) isoladamente. As mensagens seguem o padrão Conventional Commits:
+
+- `feat:` para funcionalidades novas, como as queries SQL, o formulário, os endpoints do NestJS e cada etapa da to-do list;
+- `docs:` para as explicações no `EXPLICACOES.md` e o README;
+- `chore:` para configuração e manutenção, como a criação dos projetos NestJS e Vue e o `.gitignore`;
+- `style:` para mudanças só de formatação, que não alteram o comportamento, como a padronização das palavras-chave do SQL.
+
+A ordem seguiu do mais isolado para o mais complexo: TypeScript, SQL, HTML e CSS, backend e, por último, o frontend em Vue. Logo depois de terminar o código de cada item, fiz um commit separado com a explicação dele, ainda com o raciocínio fresco.
+
+No Vue, dividi a to-do list em vários commits, um por etapa: a criação do projeto, os estilos globais, o tipo e a renderização da lista, o componente `TodoItem`, marcar e remover, o formulário, o contador com o estado vazio e, por fim, o filtro. Assim, cada commit deixa a aplicação funcionando e com uma funcionalidade a mais.
+
+O histórico também mostra correções que fiz no caminho, como a padronização do SQL e um commit para tirar do repositório a pasta `dist` do backend, gerada pelo build, que tinha entrado por falta de um `.gitignore`.
 
 ## 7. Organização de Projeto
 
@@ -284,3 +299,22 @@ O NestJS já incentiva a organização por módulos, e eu sigo isso: um módulo 
 Além disso, independente da causa, mostraria um estado de carregamento no botão de entrar, para a pessoa saber que algo está acontecendo enquanto espera.
 
 ## Uso de Ferramentas de IA
+
+### Ferramentas que usei
+
+- **Claude Code:** no bônus do TypeScript, gerou a tipagem genérica (`NumericKeys<T>`) que permite filtrar por qualquer campo numérico. Depois estudei como ela funciona, e a explicação está no item 3.
+- **Claude (chat):** usei como um mentor durante o desafio inteiro. Ele me guiou passo a passo, explicando o que fazer e por quê, e revisou o meu código a cada etapa apontando erros, mas o código foi escrito por mim. Também usei para gerar as referências de design do formulário e da to-do list, para tirar dúvidas de configuração (como as opções do instalador do Vue) e para revisar e redigir as explicações deste arquivo a partir do que eu fiz e entendi.
+
+### Um exemplo concreto
+
+Na to-do list, o cartão aparecia estreito, do tamanho do título, mesmo com `width: 100%` e `max-width: 480px`. Eu tinha usado o mesmo CSS do formulário do item 1, onde funcionava. A IA me orientou a inspecionar a estrutura da página no navegador, e foi assim que entendi a causa: o Vue monta a aplicação dentro de uma `<div id="app">`, então o flex do `body` centralizava essa div, e não o meu `<main>`. A div encolhia até o tamanho do conteúdo, e o `width: 100%` do cartão era relativo a ela. Resolvi dando largura à `#app` no CSS global.
+
+Outro momento foi na escolha entre `ref` e `reactive`. Minha primeira resposta foi que o `reactive` não aceita tipos primitivos, o que explica o filtro e o texto do formulário, mas não a lista, que é um array. A IA me ajudou a chegar no motivo real: ao remover uma tarefa, eu substituo o array inteiro, e só o `ref` mantém a reatividade nessa troca.
+
+### MCP e agentes
+
+O **MCP (Model Context Protocol)** é um padrão para integrar modelos de linguagem a ferramentas e sistemas externos. Em vez de cada aplicação criar sua própria integração, o MCP define uma forma comum de expor ferramentas e dados para o modelo, como acessar arquivos, um banco de dados ou uma API.
+
+Os **agentes** são sistemas que usam um LLM para cumprir uma tarefa pedida pelo usuário, por texto ou áudio. A diferença para um chat comum é que o agente executa ações: decide um passo, usa uma ferramenta, observa o resultado e decide o próximo, até concluir a tarefa. O Claude Code, que usei neste desafio, funciona assim. O MCP é justamente uma das formas de dar ferramentas a um agente.
+
+Já ferramentas **low-code**, como o n8n, simplificam a criação de automações: em vez de escrever código, você monta um fluxo ligando blocos (nós), cada um com uma função e suas configurações, e alguns desses nós podem ser agentes com LLM. O CrewAI, pelo que entendo, segue outro caminho: é um framework em código para criar vários agentes que trabalham juntos, cada um com um papel. Ainda não usei nenhum dos dois na prática, mas é algo que tenho curiosidade de explorar.
