@@ -2,11 +2,9 @@
 import { ref } from 'vue'
 import type { Task } from './types/task'
 import TodoItem from './components/TodoItem.vue'
+import TodoForm from './components/TodoForm.vue'
 
-const tasks = ref<Task[]>([
-  { id: '1', title: 'Tarefa 1', done: false },
-  { id: '2', title: 'Tarefa 2', done: true },
-])
+const tasks = ref<Task[]>([])
 
 const toggleTask = (id: string) => {
   const task = tasks.value.find((task) => task.id === id)
@@ -18,11 +16,20 @@ const toggleTask = (id: string) => {
 const removeTask = (id: string) => {
   tasks.value = tasks.value.filter((task) => task.id !== id)
 }
+
+const addTask = (title: string) => {
+  tasks.value.push({
+    id: crypto.randomUUID(),
+    title,
+    done: false,
+  })
+}
 </script>
 
 <template>
   <main>
     <h1>Minhas Tarefas</h1>
+    <TodoForm @add="addTask" />
     <ul>
       <TodoItem
         v-for="task in tasks"
