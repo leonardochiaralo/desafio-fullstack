@@ -36,6 +36,42 @@ Testei no navegador o envio vazio, um e-mail inválido (`ana@`), uma senha curta
 
 ## 2. Vue 3 (Composition API)
 
+A to-do list está em `frontend/`, criada com o `create-vue` (Vite) em TypeScript, com ESLint e Prettier, os mesmos do backend. Não incluí Vue Router nem Pinia: a aplicação tem uma tela só, e o estado cabe em um componente. Também escolhi as versões estáveis das ferramentas em vez das experimentais que o instalador oferecia. O visual partiu de uma referência de design gerada com o Claude, e reaproveitei as cores e o estilo de cartão do formulário do item 1.
+
+### Componentes
+
+- **`App.vue`:** é o dono do estado. Guarda a lista de tarefas e o filtro ativo, calcula a lista filtrada e as contagens, e é o único que adiciona, marca e remove tarefas.
+- **`TodoForm.vue`:** controla só o texto digitado. Ao enviar, avisa o `App` com o título e limpa o campo.
+- **`TodoItem.vue`:** mostra uma tarefa, com checkbox, título e botão de remover.
+- **`TodoFilter.vue`:** mostra os três filtros com as contagens e destaca o ativo.
+
+A comunicação segue o padrão do Vue: **os dados descem por props e os eventos sobem por emits**. O `TodoItem` recebe a tarefa por prop, mas não a altera: quando a pessoa marca ou remove, ele emite `toggle` ou `remove` com o `id`, e o `App` faz a alteração. Props são somente leitura, e concentrar as mudanças em um lugar deixa claro quem altera o estado. Os componentes usam `defineProps` e `defineEmits` na forma tipada, então o TypeScript confere o que é passado e emitido.
+
+O tipo `Task` e o tipo `TaskFilter` (`'all' | 'pending' | 'done'`) ficam em `src/types/task.ts`, porque são usados por mais de um componente.
+
+### Primitivas da Composition API
+
+- **`ref`:** usei para a lista (`tasks`), o filtro ativo (`activeFilter`) e o texto do formulário (`newTaskTitle`). O filtro e o texto são strings, e o `reactive` não aceita tipos primitivos. Na lista, o motivo é outro: ao remover uma tarefa, eu crio um array novo com `filter` e substituo o antigo (`tasks.value = ...`). Com `ref`, a variável é um container que não muda, e o Vue percebe a troca do valor. Com `reactive`, a reatividade fica presa ao objeto original, e substituí-lo quebraria a ligação com o template.
+- **`computed`:** usei para a lista filtrada (`filteredTasks`) e para as contagens (`completedCount` e `pendingCount`). São valores derivados da lista: o `computed` recalcula sozinho quando a lista ou o filtro mudam e guarda o resultado em cache até lá. A lista filtrada é só uma visão de `tasks`, e não uma segunda lista, então não preciso manter dois estados sincronizados.
+- **`v-model`:** liga o campo de texto do `TodoForm` ao `ref`, nos dois sentidos.
+
+No `TodoFilter`, mantive o par prop + evento para ficar igual aos outros componentes. Sei que o Vue tem o `defineModel`, que simplifica esse padrão em um `v-model` no componente, mas preferi a consistência.
+
+### Outros detalhes
+
+- O `v-for` usa o `id` como `:key`, gerado com `crypto.randomUUID()`. Com o índice, ao remover uma tarefa, os índices das seguintes mudariam, e o Vue poderia reaproveitar o elemento errado.
+- O formulário usa `@submit.prevent`, que impede o recarregamento da página e permite adicionar com Enter. Tarefas vazias ou só com espaços são ignoradas com `trim()`.
+- Há duas mensagens de lista vazia: uma quando não há tarefas e outra quando o filtro escolhido não tem nenhuma.
+- Os estilos globais (variáveis, reset e `body`) ficam em `src/assets/main.css`, e o resto fica em cada componente com `<style scoped>`, que limita o CSS ao componente.
+- Acessibilidade: cada checkbox tem um `<label>` com `for`/`id` dinâmicos, o botão de remover tem `aria-label`, os filtros usam `aria-pressed`, e todos os botões têm foco visível.
+- Títulos muito longos quebram a linha (`overflow-wrap: anywhere`) em vez de estourar o cartão.
+
+### Problemas que encontrei
+
+- O cartão ficava estreito: o Vue monta a aplicação dentro de uma `<div id="app">`, e era ela, não o `<main>`, que o flex do `body` centralizava. Resolvi dando largura à `#app` no CSS global.
+- O VS Code acusava erro ao importar o `App.vue` até eu instalar a extensão Vue (Official), que ensina o editor a entender arquivos `.vue`.
+- No começo, usei `{{ }}` dentro de atributos, o que não funciona no Vue. Para atributos dinâmicos é preciso o `:` (como em `:id`), com uma expressão JavaScript.
+
 ## 3. TypeScript
 
 Criei uma interface `User` para definir o formato de um usuário e tipei `users` como `User[]`, para que o TypeScript aponte erro caso seja adicionado um usuário fora do padrão. Usei `interface` porque ela descreve bem o formato de um objeto e pode ser estendida depois, se o modelo crescer.
