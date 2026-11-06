@@ -1,11 +1,20 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { Task } from './types/task'
+import type { Task, TaskFilter } from './types/task'
 import TodoItem from './components/TodoItem.vue'
 import TodoForm from './components/TodoForm.vue'
+import TodoFilter from './components/TodoFilter.vue'
 
 const tasks = ref<Task[]>([])
+const activeFilter = ref<TaskFilter>('all')
+
+const filteredTasks = computed(() => {
+  if (activeFilter.value === 'pending') return tasks.value.filter((task) => !task.done)
+  if (activeFilter.value === 'done') return tasks.value.filter((task) => task.done)
+  return tasks.value
+})
 const completedCount = computed(() => tasks.value.filter((task) => task.done).length)
+const pendingCount = computed(() => tasks.value.length - completedCount.value)
 
 const toggleTask = (id: string) => {
   const task = tasks.value.find((task) => task.id === id)
@@ -34,13 +43,21 @@ const addTask = (title: string) => {
       <p class="summary">{{ completedCount }} de {{ tasks.length }} concluídas</p>
     </header>
     <TodoForm @add="addTask" />
+    <TodoFilter
+      :active-filter="activeFilter"
+      :counts="{ all: tasks.length, pending: pendingCount, done: completedCount }"
+      @change="activeFilter = $event"
+    />
     <div v-if="tasks.length === 0" class="empty">
       <p class="empty-title">Nenhuma tarefa por aqui</p>
       <p class="empty-hint">Adicione a primeira tarefa no campo acima</p>
     </div>
+    <div v-else-if="filteredTasks.length === 0" class="empty">
+      <p class="empty-title">Nenhuma tarefa neste filtro</p>
+    </div>
     <ul v-else>
       <TodoItem
-        v-for="task in tasks"
+        v-for="task in filteredTasks"
         :key="task.id"
         :task="task"
         @toggle="toggleTask"

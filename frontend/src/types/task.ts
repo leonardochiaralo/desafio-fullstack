@@ -4,4 +4,6 @@ interface Task {
   done: boolean
 }
 
-export type { Task }
+type TaskFilter = 'all' | 'pending' | 'done'
+
+export type { Task, TaskFilter }
