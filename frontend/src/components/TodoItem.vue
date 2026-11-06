@@ -29,15 +29,46 @@ li {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-height: 52px;
+  padding: 8px 8px 8px 16px;
+  border-bottom: 1px solid var(--card-border-color);
+
+  &:last-child {
+    border-bottom: none;
+  }
 
   label {
     flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   &.done {
     label {
       text-decoration: line-through;
       color: var(--text-secondary-color);
+    }
+  }
+
+  button {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    font-size: 20px;
+    color: var(--text-secondary-color);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--error-color);
+      background-color: var(--error-background-color);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
     }
   }
 }

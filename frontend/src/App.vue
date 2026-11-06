@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { Task } from './types/task'
 import TodoItem from './components/TodoItem.vue'
 import TodoForm from './components/TodoForm.vue'
 
 const tasks = ref<Task[]>([])
+const completedCount = computed(() => tasks.value.filter((task) => task.done).length)
 
 const toggleTask = (id: string) => {
   const task = tasks.value.find((task) => task.id === id)
@@ -28,9 +29,16 @@ const addTask = (title: string) => {
 
 <template>
   <main>
-    <h1>Minhas Tarefas</h1>
+    <header class="header">
+      <h1>Minhas Tarefas</h1>
+      <p class="summary">{{ completedCount }} de {{ tasks.length }} concluídas</p>
+    </header>
     <TodoForm @add="addTask" />
-    <ul>
+    <div v-if="tasks.length === 0" class="empty">
+      <p class="empty-title">Nenhuma tarefa por aqui</p>
+      <p class="empty-hint">Adicione a primeira tarefa no campo acima</p>
+    </div>
+    <ul v-else>
       <TodoItem
         v-for="task in tasks"
         :key="task.id"
@@ -57,6 +65,38 @@ main {
 
   ul {
     list-style: none;
+    border: 1px solid var(--card-border-color);
+    border-radius: 8px;
+  }
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .summary {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary-color);
+    }
+  }
+
+  .empty {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 24px 0;
+    text-align: center;
+
+    .empty-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .empty-hint {
+      font-size: 14px;
+      color: var(--text-secondary-color);
+    }
   }
 }
 </style>
